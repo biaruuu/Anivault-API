@@ -370,7 +370,11 @@ async function watchHandler(req: Request, res: Response, directAnikotoId?: strin
   try {
     const siteIds = directAnikoto
       ? { anilistId: null, malId: null, title: null, siteIds: { anikoto: directAnikotoId } }
-      : directHeavenId
+      : source === 'megaplay'
+        // MegaPlay is keyed directly by the MAL/AniList id of the exact season, so skip the
+        // slow title searches on the other sites (and any chance of mapping to another season).
+        ? { anilistId: anilistId ? parseInt(anilistId) : null, malId: malId ? parseInt(malId) : null, title: null, siteIds: {} }
+        : directHeavenId
         ? { anilistId: null, malId: null, title: null, siteIds: { animeheaven: id } }
         : await resolveSiteIds(anilistId, malId);
     if (!siteIds) return res.status(404).json({ error: 'Could not resolve anime' });

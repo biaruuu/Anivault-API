@@ -16,7 +16,10 @@ app.use(express.json());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000'),
-  max: parseInt(process.env.RATE_LIMIT_MAX || '60'),
+  max: parseInt(process.env.RATE_LIMIT_MAX || '120'),
+  // Video playback fetches a proxied playlist plus dozens of segments per minute. Counting
+  // those against the limit made every player hit 429 within seconds ("couldn't play").
+  skip: (req) => req.path.startsWith('/proxy/'),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please slow down.' },
